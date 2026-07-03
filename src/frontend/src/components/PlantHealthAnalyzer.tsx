@@ -168,69 +168,6 @@ export default function PlantHealthAnalyzer() {
     });
   };
 
-  // The Internet Computer enforces a hard ~2MB limit on canister call
-  // payloads. Real camera photos are routinely 3-10MB, so sending the raw
-  // file (as the previous implementation did) silently fails on the replica
-  // with no useful client-side error. Downscale + re-encode as JPEG here so
-  // the upload reliably fits well under that ceiling regardless of the
-  // original file size or format.
-  const MAX_UPLOAD_DIMENSION = 1024;
-  const JPEG_QUALITY = 0.75;
-  const MAX_SAFE_UPLOAD_BYTES = 1_500_000; // stay well under the ~2MB IC limit
-
-  const compressImageForUpload = async (file: File): Promise<Uint8Array> => {
-    const objectUrl = URL.createObjectURL(file);
-    try {
-      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-        const el = new Image();
-        el.onload = () => resolve(el);
-        el.onerror = () => reject(new Error("Could not read image"));
-        el.src = objectUrl;
-      });
-
-      let { width, height } = img;
-      if (width > MAX_UPLOAD_DIMENSION || height > MAX_UPLOAD_DIMENSION) {
-        if (width > height) {
-          height = Math.round((height / width) * MAX_UPLOAD_DIMENSION);
-          width = MAX_UPLOAD_DIMENSION;
-        } else {
-          width = Math.round((width / height) * MAX_UPLOAD_DIMENSION);
-          height = MAX_UPLOAD_DIMENSION;
-        }
-      }
-
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      ctx?.drawImage(img, 0, 0, width, height);
-
-      // Try progressively lower quality/size if still too large, so even
-      // very large source photos end up under the safe upload ceiling.
-      let quality = JPEG_QUALITY;
-      let bytes: Uint8Array | null = null;
-      for (let attempt = 0; attempt < 4; attempt++) {
-        const blob: Blob | null = await new Promise((resolve) =>
-          canvas.toBlob((b) => resolve(b), "image/jpeg", quality),
-        );
-        if (!blob) break;
-        const buf = new Uint8Array(await blob.arrayBuffer());
-        bytes = buf;
-        if (buf.byteLength <= MAX_SAFE_UPLOAD_BYTES) break;
-        quality -= 0.15;
-      }
-
-      if (!bytes) {
-        // Fallback: use the original bytes if canvas encoding failed for
-        // some reason (e.g. unsupported format) — better than nothing.
-        bytes = new Uint8Array(await file.arrayBuffer());
-      }
-      return bytes;
-    } finally {
-      URL.revokeObjectURL(objectUrl);
-    }
-  };
-
   const handleAnalyze = async () => {
     if (!selectedFile) {
       toast.error(
@@ -256,21 +193,11 @@ export default function PlantHealthAnalyzer() {
     setIsAnalyzing(true);
     try {
       setUploadStage("reading");
-      const greenRatio = await calculateGreenRatio(selectedFile);
+      const arrayBuffer = await selectedFile.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
 
       setUploadStage("analyzing-pixels");
-      const bytes = await compressImageForUpload(selectedFile);
-
-      if (bytes.byteLength > MAX_SAFE_UPLOAD_BYTES) {
-        toast.error(
-          language === "en"
-            ? "This image is too large even after compression. Please try a smaller or simpler photo."
-            : "यह छवि संपीड़न के बाद भी बहुत बड़ी है। कृपया एक छोटी या सरल तस्वीर आज़माएं।",
-        );
-        setIsAnalyzing(false);
-        setUploadStage("idle");
-        return;
-      }
+      const greenRatio = await calculateGreenRatio(selectedFile);
 
       setUploadStage("uploading");
       const blob = ExternalBlob.fromBytes(bytes);
