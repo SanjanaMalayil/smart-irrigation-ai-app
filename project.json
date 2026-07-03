@@ -1,0 +1,20 @@
+{
+  "overview": "Smart Irrigation AI app that analyzes leaf health, runs a farming chatbot, fetches weather, and generates irrigation recommendations and export reports.",
+  "features": [
+    "Leaf health analysis with image upload",
+    "AI farming chatbot",
+    "Weather data fetch with connecting feedback",
+    "Irrigation recommendations",
+    "Export and report generation",
+    "Hindi and English language toggle"
+  ],
+  "category": "productivity",
+  "tags": [
+    "agriculture",
+    "ai",
+    "irrigation",
+    "chatbot",
+    "weather"
+  ],
+  "last_updated": "2026-06-27T05:14:47.378Z"
+}

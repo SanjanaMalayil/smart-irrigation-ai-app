@@ -1,0 +1,46 @@
+// Version: 1.0.0
+type ChatMessage__1037536196 =
+  {message : Text; sender : Text; timestamp : Int};
+type Data__80296667<K, V> =
+  {var count : Nat__1040412405; kvs : [var ?(K, V)]};
+type Internal__41346355<K, V> =
+  {children : [var ?Node__1000929467<K, V>]; data : Data__80296667<K, V>};
+type IrrigationRecommendation__644736671 =
+  {
+    reason : Text;
+    recommendation : Text;
+    soilMoisture : Float;
+    temperature : Float;
+    timestamp : Int
+  };
+type Leaf__712614010<K, V> = {data : Data__80296667<K, V>};
+type Nat__1040412405 = Nat__920180692;
+type Nat__920180692 = Nat;
+type Node__1000929467<K, V> =
+  {#internal : Internal__41346355<K, V>; #leaf : Leaf__712614010<K, V>};
+type PlantHealthAnalysis__601797793 =
+  {greenRatio : Float; healthStatus : Text; image : Blob; timestamp : Int};
+type WeatherData__617002358 =
+  {conditions : Text; humidity : Float; temperature : Float; timestamp : Int};
+actor {
+  stable chatHistory :
+    {
+      var root : Node__1000929467<Int, ChatMessage__1037536196>;
+      var size : Nat__1040412405
+    };
+  stable irrigationRecommendations :
+    {
+      var root : Node__1000929467<Int, IrrigationRecommendation__644736671>;
+      var size : Nat__1040412405
+    };
+  stable plantAnalyses :
+    {
+      var root : Node__1000929467<Int, PlantHealthAnalysis__601797793>;
+      var size : Nat__1040412405
+    };
+  stable weatherDataStore :
+    {
+      var root : Node__1000929467<Int, WeatherData__617002358>;
+      var size : Nat__1040412405
+    }
+};

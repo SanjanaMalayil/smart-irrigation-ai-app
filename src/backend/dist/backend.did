@@ -1,0 +1,88 @@
+type WeatherData = 
+ record {
+   conditions: text;
+   humidity: float64;
+   temperature: float64;
+   timestamp: int;
+ };
+type TransformationOutput = 
+ record {
+   body: blob;
+   headers: vec HttpHeader;
+   status: nat;
+ };
+type TransformationInput = 
+ record {
+   context: blob;
+   response: HttpRequestResult;
+ };
+type PlantHealthAnalysis = 
+ record {
+   greenRatio: float64;
+   healthStatus: text;
+   image: blob;
+   timestamp: int;
+ };
+type IrrigationRecommendation = 
+ record {
+   reason: text;
+   recommendation: text;
+   soilMoisture: float64;
+   temperature: float64;
+   timestamp: int;
+ };
+type HttpRequestResult = 
+ record {
+   body: blob;
+   headers: vec HttpHeader;
+   status: nat;
+ };
+type HttpHeader = 
+ record {
+   name: text;
+   value: text;
+ };
+type ChatMessage = 
+ record {
+   message: text;
+   sender: text;
+   timestamp: int;
+ };
+service : {
+  __chatHistory: (ko: opt int, count: opt nat) ->
+   (vec record {
+          int;
+          ChatMessage;
+        }) query;
+  __irrigationRecommendations: (ko: opt int, count: opt nat) ->
+   (vec record {
+          int;
+          IrrigationRecommendation;
+        }) query;
+  __plantAnalyses: (ko: opt int, count: opt nat) ->
+   (vec record {
+          int;
+          PlantHealthAnalysis;
+        }) query;
+  __weatherDataStore: (ko: opt int, count: opt nat) ->
+   (vec record {
+          int;
+          WeatherData;
+        }) query;
+  addChatMessage: (sender: text, message: text) -> ();
+  addIrrigationRecommendation: (soilMoisture: float64, temperature: float64,
+   recommendation: text, reason: text) -> ();
+  analyzePlantHealth: (image: blob, greenRatio: float64) -> ();
+  fetchWeatherData: (apiUrl: text) -> (text);
+  getChatHistory: () -> (vec ChatMessage) query;
+  getChatHistoryForExport: () -> (vec ChatMessage) query;
+  getIrrigationRecommendations: () -> (vec IrrigationRecommendation) query;
+  getIrrigationRecommendationsForExport: () ->
+   (vec IrrigationRecommendation) query;
+  getLatestWeatherData: () -> (opt WeatherData) query;
+  getPlantAnalyses: () -> (vec PlantHealthAnalysis) query;
+  getPlantAnalysesForExport: () -> (vec PlantHealthAnalysis) query;
+  transform: (input: TransformationInput) -> (TransformationOutput) query;
+  updateWeatherData: (temperature: float64, humidity: float64, conditions:
+   text) -> ();
+}

@@ -1,0 +1,7 @@
+[dependencies]
+caffeineai-object-storage = "1.0.0"
+caffeineai-http-outcalls = "0.1.2"
+caffeineai-data-viewer = "0.1.0"
+
+[canisters.backend]
+main = "main.mo"
